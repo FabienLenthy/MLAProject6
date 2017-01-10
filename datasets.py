@@ -2,6 +2,7 @@
 import numpy as np
 import pandas as pd
 
+# TODO: lighter dataset representation? np.array?
 class Sample:
     "Represenation of data samples"
     def __init__(self, xclass, values, identity, attributes=None):

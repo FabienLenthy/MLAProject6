@@ -36,6 +36,10 @@ def checkForest(forest, testdata):
     return float(correct)/len(testdata)
 
 ITERATE = 10
+# TODO: Try less iterations (3) and report variance, too.
+# TODO: Save the reported data into a data structure.
+# TODO: Report as a latex table from the data structure.
+# TODO: Pickle the forests! 
 
 def checkOnData(data):
     t0 = time.time()
@@ -51,11 +55,13 @@ def checkOnData(data):
         train, test = S[:int(0.9*N)],S[int(0.9*N):]
         H = RandomForest(train, nbrTrees)
         H2 = RandomForest(train, nbrTrees, SF=False)
-        cumulSpecificError += sum([1-check(h,test) for h in H])/nbrTrees
+        # Single tree: This should be out-of-bag, not test. Also the best one from H or H2.
+        cumulSpecificError += sum([1-check(h,test) for h in H])/nbrTrees    
         errorF1 = 1-checkForest(H,test)
         errorF2 = 1-checkForest(H2,test)
-        cumulErrorSelection += min(errorF1,errorF2)
-        cumulErrorF1 += errorF1
+        # Choose by means of the lowest out-of-bag error. Report the test error.
+        cumulErrorSelection += min(errorF1,errorF2)  
+        cumulErrorF1 += errorF1     # OK.
         
     finalErrorF1 = cumulErrorF1/ITERATE
     finalErrorSelection = cumulErrorSelection/ITERATE
