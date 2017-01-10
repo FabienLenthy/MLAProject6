@@ -2,6 +2,7 @@
 from datasets import chooseData
 from rf import RandomForest, TreeLeaf
 import numpy as np
+import time
 
 def classify(tree, sample):
     "Classify a sample using the given decition tree"
@@ -37,6 +38,7 @@ def checkForest(forest, testdata):
 ITERATE = 10
 
 def checkOnData(data):
+    t0 = time.time()
     S = chooseData(data)
     N = len(S)
     cumulErrorSelection = 0
@@ -65,6 +67,7 @@ def checkOnData(data):
     print("Error rate with selection :", str(finalErrorSelection))
     print("Error rate with single input :", str(finalErrorF1))
     print("Error rate with individual trees :", str(finalSpecificError))
+    print('Execution time: {} seconds.'.format(time.time() - t0))
     print()
     
 if __name__=="__main__":

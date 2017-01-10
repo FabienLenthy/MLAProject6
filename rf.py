@@ -55,18 +55,19 @@ def RandomizedTreeLearn(S, F, singleFeature, maxdepth = MAXDEPTH): # here S is a
     if maxdepth < 1:
         return TreeLeaf(default)
     f = FeatureSubsample(F, singleFeature) # feature subsample
-    a,v = bestFeature(S, f)
+    [a, v, dataR, dataL] = bestFeature(S, f)
     attributesLeftL = F
     attributesLeftR = F
-    dataL = select(S, a, v, False)
-    dataR = select(S, a, v, True)
+    #[dataR, dataL] = select(S, a, v)
+    #dataL = select(S, a, v, False) #under
+    #dataR = select(S, a, v, True) #over
     branches = [buildBranch(dataL, default, attributesLeftL),
                 buildBranch(dataR, default, attributesLeftR)]
     return TreeNode(a, branches, default, v)
 
 def BootstrapSample(S):
-    soS = 10                   # size of subsample
-    return np.random.choice(S, soS).tolist()
+    soS = int(len(S) * 2/3)    # size of subsample
+    return np.random.choice(S, soS, replace = True).tolist()
 
 def FeatureSubsample(F, singleFeature):
     soS = soF
@@ -105,21 +106,52 @@ def getAttributeValues(S,attribute):
 def bestFeature(S, features):
     if len(S) <= 1:
         return None
-    gains = [(averageGain(S, f, v), f, v) for f in features for v in getAttributeValues(S,f)]
-    return max(gains, key=lambda x: x[0])[1:]
-
+    top = None
+    tover = None
+    tunder = None
+    for f in features:
+        for v in getAttributeValues(S,f):
+            [gain, sover, sunder] = averageGain(S, f, v)
+            if top is None:
+                top = (gain, f, v)
+                tover = sover
+                tunder = sunder
+            elif top[0] < gain:
+                top = (gain, f, v)
+                tover = sover
+                tunder = sunder
+    #gains = [(averageGain(S, f, v), f, v) for f in features for v in getAttributeValues(S,f)]
+    #return max(gains, key=lambda x: x[0])[1:]
+    return [top[1], top[2], tover, tunder]
+    
 def mostCommon(S):
     classes = list(set([x.getClass() for x in S]))
     return classes[np.argmax([len([x for x in S if x.getClass()==c]) for c in classes])]
 
 def averageGain(dataset, attribute, value):
     weighted = 0.0
-    subsetOver = select(dataset, attribute, value, True)
+    [subsetOver, subsetUnder] = select(dataset, attribute, value)
     weighted += entropy(subsetOver) * len(subsetOver)
-    subsetUnder = select(dataset, attribute, value, False)
     weighted += entropy(subsetUnder) * len(subsetUnder)
-    return entropy(dataset) - weighted/len(dataset)
+    return [entropy(dataset) - weighted/len(dataset), subsetOver, subsetUnder]
 
+
+def entropy(dataset):
+    "Calculate the entropy of a dataset"
+    n = len(dataset)
+    entropy = 0
+    counts = dict()
+    for x in dataset:
+        cls = x.getClass()
+        if cls not in counts:
+            counts[cls] = 1
+        else:
+            counts[cls] += 1
+    for v in counts.values():
+        entropy -= float(v)/n * math.log(float(v)/n,2)
+    return entropy
+    
+"""
 def entropy(dataset):
     "Calculate the entropy of a dataset"
     classes = list(set([x.getClass() for x in dataset]))
@@ -132,12 +164,20 @@ def entropy(dataset):
         else:
             entropy -= float(nclass)/n * math.log(float(nclass)/n,2)
     return entropy
-    
-def select(dataset, attribute, value, takeOver):
+"""
+
+def select(dataset, attribute, value):
     #print('value', value)
     #print('attribute', attribute)
     #print(dataset[0].attribute[attribute])
-    return [x for x in dataset if (x.getAttributeValue(attribute) >= value) == takeOver]
+    over = []
+    under = []
+    for x in dataset:
+        if (x.getAttributeValue(attribute) >= value):
+            over += [x]
+        else:
+            under += [x]
+    return [over, under]
 
 def allFromClass(dataset,c):
     "Check if all samples are from class c"
