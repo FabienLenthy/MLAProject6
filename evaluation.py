@@ -53,8 +53,8 @@ def checkOnData(data):
         nbrTrees = 100  # TODO: This number is dataset dependent! (zip-code 200)
         np.random.shuffle(S)
         train, test = S[:int(0.9*N)],S[int(0.9*N):]
-        H = RandomForest(train, nbrTrees)
-        H2 = RandomForest(train, nbrTrees, SF=False)
+        H, S_OOB = RandomForest(train, nbrTrees) # Modified to return OOB samples
+        H2, S_OOB2 = RandomForest(train, nbrTrees, SF=False) # Modified to return OOB samples
         # Single tree: This should be out-of-bag, not test. Also the best one from H or H2.
         cumulSpecificError += sum([1-check(h,test) for h in H])/nbrTrees    
         errorF1 = 1-checkForest(H,test)
