@@ -49,6 +49,12 @@ def checkOnData(data):
     cumulErrorF1 = 0
     cumulErrorF2 = 0
     cumulSpecificError = 0
+
+    # FOR OOB
+    cumulErrorSelectionOOB = 0
+    cumulErrorF1OOB = 0
+    cumulErrorF2OOB = 0
+    
     for i in range(ITERATE):
         nbrTrees = 100  # TODO: This number is dataset dependent! (zip-code 200)
         np.random.shuffle(S)
@@ -62,7 +68,19 @@ def checkOnData(data):
         # Choose by means of the lowest out-of-bag error. Report the test error.
         cumulErrorSelection += min(errorF1,errorF2)  
         cumulErrorF1 += errorF1     # OK.
-        
+
+        # OOB ERROR
+        errorOOB1 = 1-checkForest(H, S_OOB)
+        errorOOB2 = 1-checkForest(H2, S_OOB2)
+        cumulErrorSelectionOOB += min(errorOOB1, errorOOB2)
+        cumulErrorF1OOB += errorOOB1
+        cumulErrorF2OOB += errorOOB2
+    # FINAL OOB ERROR
+    finalErrorOOB1 = cumulErrorF1OOB/ITERATE
+    finalErrorOOB2 = cumulErrorF2OOB/ITERATE
+    finalErrorSelectionOOB = cumulErrorSelectionOOB/ITERATE
+    
+    #   
     finalErrorF1 = cumulErrorF1/ITERATE
     finalErrorSelection = cumulErrorSelection/ITERATE
     finalSpecificError = cumulSpecificError/ITERATE
@@ -75,6 +93,10 @@ def checkOnData(data):
     print("Error rate with individual trees :", str(finalSpecificError))
     print('Execution time: {} seconds.'.format(time.time() - t0))
     print()
+    #OOB PRINTS
+    print('H OOB :', str(finalErrorOOB1))
+    print('H2 OOB :', str(finalErrorOOB2))
+    print('H OOB selection :', str(finalErrorSelectionOOB))
     
 if __name__=="__main__":
     checkOnData("glass")
