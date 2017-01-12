@@ -36,18 +36,14 @@ def RandomForest(S, nbrTrees = 100, F=None, SF=True):
         F = range(S[0].getNbrAttributes())
     B = nbrTrees                    # number of trees in forest
     H = []
+    Sb = []
+    Sset = set(S)
     for i in range(B):
-        S_i = BootstrapSample(S)
-
-        # We need the out-of-bag samples for OOB estimate
-        S_OOB = []
-        for i in S:
-            if i not in S_i:
-                S_OOB.append(i)
-        
+        [S_i, Stst] = BootstrapSample(S, Sset)
         h_i = RandomizedTreeLearn(S_i, F, SF)
         H.append(h_i)
-    return H, S_OOB
+        Sb.append(Stst)
+    return [H, Sb]
 
 def RandomizedTreeLearn(S, F, singleFeature, maxdepth = MAXDEPTH): # here S is a subsample 
     def buildBranch(dataset, default, attributes):
@@ -72,9 +68,11 @@ def RandomizedTreeLearn(S, F, singleFeature, maxdepth = MAXDEPTH): # here S is a
                 buildBranch(dataR, default, attributesLeftR)]
     return TreeNode(a, branches, default, v)
 
-def BootstrapSample(S):
+def BootstrapSample(S, Sset):
     soS = int(len(S) * 2/3)    # size of subsample
-    return np.random.choice(S, soS, replace = True).tolist()
+    train = np.random.choice(S, soS, replace = True).tolist()
+    tst = Sset.difference(set(train))
+    return [train, tst] 
 
 def FeatureSubsample(F, singleFeature):
     soS = soF
