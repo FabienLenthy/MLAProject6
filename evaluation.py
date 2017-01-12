@@ -35,6 +35,31 @@ def checkForest(forest, testdata):
             correct += 1
     return float(correct)/len(testdata)
 
+# FOR OOB MARGIN
+def OOBmarginTree(tree, testdata):
+    "Calculates the OOB margin on tree basis - the strength of 'raw margin'"
+    correct = 0
+    incorrect = 0
+    for x in testdata:
+        if classify(tree, x) == x.getClass():
+            correct += 1
+        else:
+            incorrect += 1
+    ans = correct - incorrect
+    return ans/100
+
+def OOBmarginForest(forest, testdata):
+    "Calculates the OOB margin on forest basis - the strength of mean margin"
+    correct = 0
+    incorrect = 0
+    for x in testdata:
+        if classifyForest(forest, x) == x.getClass():
+            correct += 1
+        else:
+            incorrect += 1
+    ans = correct - incorrect
+    return ans/100
+
 ITERATE = 10
 # TODO: Try less iterations (3) and report variance, too.
 # TODO: Save the reported data into a data structure.
@@ -54,6 +79,9 @@ def checkOnData(data):
     cumulErrorSelectionOOB = 0
     cumulErrorF1OOB = 0
     cumulErrorF2OOB = 0
+
+    cumulOOBmarginForest1 = 0
+    cumulOOBmarginForest2 = 0 
     
     for i in range(ITERATE):
         nbrTrees = 100  # TODO: This number is dataset dependent! (zip-code 200)
@@ -75,12 +103,23 @@ def checkOnData(data):
         cumulErrorSelectionOOB += min(errorOOB1, errorOOB2)
         cumulErrorF1OOB += errorOOB1
         cumulErrorF2OOB += errorOOB2
+
+        #OOB mean margin (forest)
+        errorMarginForest1 = OOBmarginForest(H, S_OOB)
+        errorMarginForest2 = OOBmarginForest(H2, S_OOB2)
+        cumulOOBmarginForest1 += errorMarginForest1
+        cumulOOBmarginForest2 += errorMarginForest2
+        
     # FINAL OOB ERROR
     finalErrorOOB1 = cumulErrorF1OOB/ITERATE
     finalErrorOOB2 = cumulErrorF2OOB/ITERATE
     finalErrorSelectionOOB = cumulErrorSelectionOOB/ITERATE
+
+    #OOB mean margin (forest)
+    finalOOBmarginForest1 = cumulOOBmarginForest1 / ITERATE
+    finalOOBmarginForest2 = cumulOOBmarginForest2 / ITERATE
+    #
     
-    #   
     finalErrorF1 = cumulErrorF1/ITERATE
     finalErrorSelection = cumulErrorSelection/ITERATE
     finalSpecificError = cumulSpecificError/ITERATE
@@ -97,6 +136,8 @@ def checkOnData(data):
     print('H OOB :', str(finalErrorOOB1))
     print('H2 OOB :', str(finalErrorOOB2))
     print('H OOB selection :', str(finalErrorSelectionOOB))
+    print('Mean margin H :', str(finalOOBmarginForest1))
+    print('Mean margin H2 :', str(finalOOBmarginForest2))
     
 if __name__=="__main__":
     checkOnData("glass")
