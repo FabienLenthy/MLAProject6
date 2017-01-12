@@ -86,10 +86,21 @@ def chooseData(data):
         data = np.genfromtxt(prefix + "house-votes-84.data",dtype=str,delimiter=',')
         #data = [list(x) for x in data if not any([y == '?' for y in x])]
         data = [[int(y == 'y' or y == 'democrat') - int(y == '?') for y in x] for x in data] # to numerical values
-        dataIndex = np.where(np.matrix(data)[:,-1] > -1)[0]
-        data = [data[idx] for idx in list(dataIndex)]
-        return [Sample(data[x][-1],[data[x][i] for i in range(len(data[x])-1)],x) for x in range(len(data))]
+        return [Sample(data[x][0],[data[x][i] for i in range(1,len(data[x]))],x) for x in range(len(data))]
 
     elif data == "liver":
         data = np.genfromtxt(prefix + "bupa.data",dtype=None,delimiter=',')
         return [Sample(data[x][-1],[data[x][i] for i in range(len(data[x])-1)],x) for x in range(len(data))]
+    
+    elif data == "letter":
+        data = np.genfromtxt(prefix + "letter-recognition.data",dtype=None,delimiter=',')
+        return [Sample(data[x][0],[data[x][i] for i in range(1,len(data[x]))],x) for x in range(len(data))]
+    
+    elif data == "satellite":
+        data = np.genfromtxt(prefix + "sat.trn",dtype=int)
+        return [Sample(data[x][-1],[data[x][i] for i in range(len(data[x])-1)],x) for x in range(len(data))]
+    
+    elif data == "satellite test":
+        data = np.genfromtxt(prefix + "sat.tst",dtype=int)
+        return [Sample(data[x][-1],[data[x][i] for i in range(len(data[x])-1)],x) for x in range(len(data))]
+
