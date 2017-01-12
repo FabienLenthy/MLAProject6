@@ -151,6 +151,9 @@ def checkOnData(data, training = True, evaluating = True):
     modelPrefix = 'models/RI/'
     resultPrefix = 'results/RI/'
     S = chooseData(data)
+    if data == "satellite":
+        train = S
+        test = chooseData("satellite test")
     N = len(S)
 
     cumulErrorSelection = 0
@@ -232,8 +235,9 @@ def checkOnData(data, training = True, evaluating = True):
     for i in range(ITERATE):
         nbrTrees = 100  # TODO: This number is dataset dependent! (zip-code 200)
         if training:
-            np.random.shuffle(S)
-            train, test = S[:int(0.9*N)],S[int(0.9*N):]
+            if not data == "satellite":
+                np.random.shuffle(S)
+                train, test = S[:int(0.9*N)],S[int(0.9*N):]
             [H, Sb] = RandomForest(train, nbrTrees)
             [H2, Sb2] = RandomForest(train, nbrTrees, SF=False)
             save([[H, Sb, H2, Sb2], train, test], modelPrefix + data + 'Forests' + str(i) + '.pkl') 
@@ -272,3 +276,5 @@ if __name__=="__main__":
     checkOnData("ecoli")
     checkOnData("votes")
     checkOnData("liver")
+    checkOnData("letter")
+    checkOnData("satellite")
