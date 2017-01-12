@@ -60,7 +60,7 @@ def chooseData(data):
 
     elif data == "vowel":
         data = np.genfromtxt(prefix + 'vowel-context.data',dtype=None)
-        return [Sample(data[x][-1],[data[x][i] for i in range(len(data[x])-1)],x) for x in range(len(data))]
+        return [Sample(data[x][-1],[data[x][i] for i in range(3, len(data[x])-1)],x) for x in range(len(data))]
 
     elif data == "ionosphere":
         data = np.genfromtxt(prefix + 'ionosphere.data',dtype=None, delimiter=',')
