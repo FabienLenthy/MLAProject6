@@ -11,11 +11,14 @@ def classify(tree, sample):
         return tree.cvalue
     return classify(tree.branches[int(sample.getAttributeValue(tree.attribute)>=tree.value)], sample)
 
-def classifyForest(forest, sample):
+def classifyForest(forest, sample, SOOB=None):
     "Classify a sample using the given decition tree"
     classifications = []
-    for tree in forest:
-        classifications += [classify(tree, sample)]
+    for i in range(len(forest)):
+        if SOOB == None or sample in SOOB[i]:
+            classifications += [classify(forest[i], sample)]
+    if classifications == []:
+        return None
     counts = [(c,classifications.count(c)) for c in set(classifications)]
     return sorted(counts,key=lambda x: x[1])[-1][0]
     
@@ -28,13 +31,20 @@ def check(tree, testdata):
             correct += 1
     return float(correct)/len(testdata)
 
-def checkForest(forest, testdata):
+def checkForest(forest, testdata, SOOB=None):
     "Measure fraction of correctly classified samples"
     correct = 0
+    N = len(testdata)
+    
     for x in testdata:
-        if classifyForest(forest, x) == x.getClass():
+        cls = classifyForest(forest, x, SOOB=SOOB)
+        if cls == None:
+            N -= 1
+        elif cls == x.getClass():
             correct += 1
-    return float(correct)/len(testdata)
+    if N == 0:
+        return 1
+    return float(correct)/N
 
 # FOR OOB MARGIN
 def OOBmarginTree(tree, testdata):
@@ -49,12 +59,15 @@ def OOBmarginTree(tree, testdata):
     ans = correct - incorrect
     return ans/100
 
-def OOBmarginForest(forest, testdata):
+def OOBmarginForest(forest, testdata, SOOB=None):
     "Calculates the OOB margin on forest basis - the strength of mean margin"
     correct = 0
     incorrect = 0
     for x in testdata:
-        if classifyForest(forest, x) == x.getClass():
+        cls = classifyForest(forest, x, SOOB=SOOB)
+        if cls == None:
+            continue
+        elif cls == x.getClass():
             correct += 1
         else:
             incorrect += 1
@@ -143,7 +156,6 @@ def load(fname):
 
 ITERATE = 3
 # We 'should' run 100 iterations over everything on the first 10 'small' datasets like in the paper! :-)
->>>>>>> 2f71230d248f163f9b15c4d8c1b3483063da39ef
 # TODO: Report as a latex table from the data structure.
 
 def NoiseAdder(S):
@@ -170,79 +182,12 @@ def checkOnData(data, training = True, evaluating = True, addNoise = False):
     if data == "satellite":
         train = S
         test = chooseData("satellite test")
+        if(addNoise):
+            train = NoiseAdder(train)
+            test = NoiseAdder(test)
     N = len(S)
-
     if(addNoise):
         S = NoiseAdder(S) # This function will add 10% noise on the data
-
-    cumulErrorSelection = 0
-    cumulErrorF1 = 0
-    cumulErrorF2 = 0
-    cumulSpecificError = 0
-
-    # FOR OOB
-    cumulErrorSelectionOOB = 0
-    cumulErrorF1OOB = 0
-    cumulErrorF2OOB = 0
-
-    cumulOOBmarginForest1 = 0
-    cumulOOBmarginForest2 = 0 
-    
-    for i in range(ITERATE):
-        nbrTrees = 100  # TODO: This number is dataset dependent! (zip-code 200)
-        np.random.shuffle(S)
-        train, test = S[:int(0.9*N)],S[int(0.9*N):]
-        H, S_OOB = RandomForest(train, nbrTrees) # Modified to return OOB samples
-        H2, S_OOB2 = RandomForest(train, nbrTrees, SF=False) # Modified to return OOB samples
-        # Single tree: This should be out-of-bag, not test. Also the best one from H or H2.
-        cumulSpecificError += sum([1-check(h,test) for h in H])/nbrTrees    
-        errorF1 = 1-checkForest(H,test)
-        errorF2 = 1-checkForest(H2,test)
-        # Choose by means of the lowest out-of-bag error. Report the test error.
-        cumulErrorSelection += min(errorF1,errorF2)  
-        cumulErrorF1 += errorF1     # OK.
-
-        # OOB ERROR
-        errorOOB1 = 1-checkForest(H, S_OOB)
-        errorOOB2 = 1-checkForest(H2, S_OOB2)
-        cumulErrorSelectionOOB += min(errorOOB1, errorOOB2)
-        cumulErrorF1OOB += errorOOB1
-        cumulErrorF2OOB += errorOOB2
-
-        #OOB mean margin (forest)
-        errorMarginForest1 = OOBmarginForest(H, S_OOB)
-        errorMarginForest2 = OOBmarginForest(H2, S_OOB2)
-        cumulOOBmarginForest1 += errorMarginForest1
-        cumulOOBmarginForest2 += errorMarginForest2
-        
-    # FINAL OOB ERROR
-    finalErrorOOB1 = cumulErrorF1OOB/ITERATE
-    finalErrorOOB2 = cumulErrorF2OOB/ITERATE
-    finalErrorSelectionOOB = cumulErrorSelectionOOB/ITERATE
-
-    #OOB mean margin (forest)
-    finalOOBmarginForest1 = cumulOOBmarginForest1 / ITERATE
-    finalOOBmarginForest2 = cumulOOBmarginForest2 / ITERATE
-    #
-    
-    finalErrorF1 = cumulErrorF1/ITERATE
-    finalErrorSelection = cumulErrorSelection/ITERATE
-    finalSpecificError = cumulSpecificError/ITERATE
-    
-    print("Data :", data)
-    print("Number of input :", str(S[0].getNbrAttributes()))
-    print("Number of data point :", str(len(S)))
-    print("Error rate with selection :", str(finalErrorSelection))
-    print("Error rate with single input :", str(finalErrorF1))
-    print("Error rate with individual trees :", str(finalSpecificError))
-    print('Execution time: {} seconds.'.format(time.time() - t0))
-    print()
-    #OOB PRINTS
-    print('H OOB :', str(finalErrorOOB1))
-    print('H2 OOB :', str(finalErrorOOB2))
-    print('H OOB selection :', str(finalErrorSelectionOOB))
-    print('Mean margin H :', str(finalOOBmarginForest1))
-    print('Mean margin H2 :', str(finalOOBmarginForest2))
 
     # Test and out-of-bag errors.
     errors1 = np.zeros(ITERATE)
@@ -279,8 +224,6 @@ def checkOnData(data, training = True, evaluating = True, addNoise = False):
     
     [selection, singleInput, onetree] = metricsRI(oobForest1, oobForest2, oobTree1, oobTree2, errors1, errors2)
     reportRI(selection, singleInput, onetree, data, S, runtime)
-    
->>>>>>> 2f71230d248f163f9b15c4d8c1b3483063da39ef
     
 if __name__=="__main__":
     checkOnData("glass")
