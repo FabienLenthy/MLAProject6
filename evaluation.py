@@ -146,7 +146,23 @@ ITERATE = 3
 >>>>>>> 2f71230d248f163f9b15c4d8c1b3483063da39ef
 # TODO: Report as a latex table from the data structure.
 
-def checkOnData(data, training = True, evaluating = True):
+def NoiseAdder(S):
+    allClasses = [o.xclass for o in S]
+    Classes = set(allClasses)
+    print(Classes)
+    N = len(S)
+    np.random.shuffle(S)
+    X1, X2 = S[:int(0.9*N)], S[int(0.9*N):]
+    for o in X2:
+        xx = o.xclass
+        otherClasses = [c for c in Classes if c != o.xclass]
+        np.random.shuffle(otherClasses)
+        o.xclass = otherClasses[0]
+    S = X1 + X2
+    np.random.shuffle(S)
+    return S
+
+def checkOnData(data, training = True, evaluating = True, addNoise = False):
     t0 = time.time()
     modelPrefix = 'models/RI/'
     resultPrefix = 'results/RI/'
@@ -155,6 +171,9 @@ def checkOnData(data, training = True, evaluating = True):
         train = S
         test = chooseData("satellite test")
     N = len(S)
+
+    if(addNoise):
+        S = NoiseAdder(S) # This function will add 10% noise on the data
 
     cumulErrorSelection = 0
     cumulErrorF1 = 0
