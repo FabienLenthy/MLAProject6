@@ -40,7 +40,27 @@ CancerAttributes = (
                 'Mitoses'
               )
 
-def chooseData(data):
+def waveform(nbr):
+    NUMBER_OF_ATTRIBUTES = 21
+    NUMBER_OF_CLASSES = 3
+    data = []
+    
+    h = np.zeros((NUMBER_OF_CLASSES,NUMBER_OF_ATTRIBUTES))
+    h[0][1:7] = range(1,7)
+    h[0][7:12] = range(1,6)[::-1]
+    h[1][9:20] = h[0][1:12]
+    h[2][5:16] = h[0][1:12]
+    
+    for i in range(nbr):
+        cls = np.random.randint(3)
+        choice = [int(cls==2),2-int(cls==0)]
+        m = float(np.random.randint(1000))/1000.0
+        randValue = 0
+        data += [[m*h[choice[0]][i] + (1-m)*h[choice[1]][i] + randValue for i in range(NUMBER_OF_ATTRIBUTES)] + [cls]]
+        
+    return data
+
+def chooseData(data,nbr=3300):
     prefix = 'datasets/'
     if data == "glass":
         data =np.genfromtxt(prefix + 'glass.data',dtype=None,delimiter=",")
@@ -103,4 +123,10 @@ def chooseData(data):
     elif data == "satellite test":
         data = np.genfromtxt(prefix + "sat.tst",dtype=int)
         return [Sample(data[x][-1],[data[x][i] for i in range(len(data[x])-1)],x) for x in range(len(data))]
+    
+    elif data == "waveform":
+        data = waveform(nbr)
+        return [Sample(int(data[x][-1]),[data[x][i] for i in range(len(data[x])-1)],x) for x in range(len(data))]
+    
+    
 
