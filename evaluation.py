@@ -47,7 +47,23 @@ def OOBmarginTree(tree, testdata):
         else:
             incorrect += 1
     ans = correct - incorrect
-    return ans/100
+    return ans/100 #maybe correct+incorrect
+
+def meanCorr(forest, testdata):
+    "Calculates mean correlation from raw margins"
+    raw_vect = []
+    for tree in forest:
+        raw_str = OOBmarginTree(tree, testdata)
+        raw_vect.append(raw_str)
+
+    raw_mean = sum(raw_vect)/len(raw_vect) #mr(X,Y)
+    raw_var = 0
+    for i in raw_vect:
+        raw_var += (i-raw_mean)**2
+    raw_var = (raw_var/(len(raw_vect) - 1))**0.5
+    mr2 = raw_mean*raw_mean
+    mean_corr = raw_var/mr2
+    return mean_corr
 
 def OOBmarginForest(forest, testdata):
     "Calculates the OOB margin on forest basis - the strength of mean margin"
