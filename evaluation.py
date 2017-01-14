@@ -4,6 +4,7 @@ from rf import RandomForest, TreeLeaf
 import numpy as np
 import time
 import pickle
+import os
 
 def classify(tree, sample):
     "Classify a sample using the given decition tree"
@@ -120,14 +121,21 @@ def metricsRI(oobForest1, oobForest2, oobTree1, oobTree2, errors1, errors2):
                 onetree[i] = oobTree2[i]
     
     return [selection, singleInput, onetree]
+
+def latexRI(data, mSel, mSingle, mOne, stdSel, stdSingle, stdOne, fname):
+    line = '{} & - & ${} \\pm {}$ & ${} \\pm {}$ & ${} \\pm {}$ \\\\ \n'.format(data, 
+        mSel, stdSel, mSingle, stdSingle, mOne, stdOne)
+    with open(fname, 'a') as f:
+        f.write(line)
         
-def reportRI(selection, singleInput, onetree, data, S, runtime):
+def reportRI(selection, singleInput, onetree, data, S, runtime, fname):
     mSel = np.mean(selection)
     mSingle = np.mean(singleInput)
     mOne = np.mean(onetree)
     stdSel = np.std(selection)
     stdSingle = np.std(singleInput)
     stdOne = np.std(onetree)
+    latexRI(data, mSel, mSingle, mOne, stdSel, stdSingle, stdOne, fname)
     print("Data :", data)
     print("Number of input :", str(S[0].getNbrAttributes()))
     print("Number of data point :", str(len(S)))
@@ -188,10 +196,10 @@ def NoiseAdder(S):
     return S
 
 ITERATE = 3
+latexTableFile = 'results/table.tex'
 # We 'should' run 100 iterations over everything on the first 10 'small' datasets like in the paper! :-)
-# TODO: Report as a latex table from the data structure.
 
-def checkOnData(data, training = True, evaluating = True, addNoise = False, simulatedSize = 3300):
+def checkOnData(data, training = False, evaluating = False, addNoise = False, simulatedSize = 3300):
     t0 = time.time()
     modelPrefix = 'models/RI/'
     resultPrefix = 'results/RI/'
@@ -240,9 +248,13 @@ def checkOnData(data, training = True, evaluating = True, addNoise = False, simu
         save([oobForest1, oobForest2, oobTree1, oobTree2, errors1, errors2, runtime], resultPrefix + data + 'Results.pkl') 
     
     [selection, singleInput, onetree] = metricsRI(oobForest1, oobForest2, oobTree1, oobTree2, errors1, errors2)
-    reportRI(selection, singleInput, onetree, data, S, runtime)
+    reportRI(selection, singleInput, onetree, data, S, runtime, latexTableFile)
     
 if __name__=="__main__":
+    try:
+        os.remove(latexTableFile)
+    except OSError:
+        pass
     checkOnData("glass")
     checkOnData("cancer")
     checkOnData("diabetes")
