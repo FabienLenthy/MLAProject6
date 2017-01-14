@@ -15,7 +15,7 @@ def classifyForest(forest, sample, SOOB=None):
     "Classify a sample using the given decition tree"
     classifications = []
     for i in range(len(forest)):
-        if SOOB == None or sample in SOOB[i]:
+        if SOOB == None or sample in SOOB[i]:   # TODO: This is not OOB forest classification! (among others, SOOB (almost) always empty)
             classifications += [classify(forest[i], sample)]
     if classifications == []:
         return None
@@ -42,13 +42,15 @@ def checkForest(forest, testdata, SOOB=None):
             N -= 1
         elif cls == x.getClass():
             correct += 1
-    if N == 0:
+    if N == 0:  # TODO: Very likely always the case when doing OOB and that is wrong.
         return 1
     return float(correct)/N
 
 # FOR OOB MARGIN
 def OOBmarginTree(tree, testdata):
     "Calculates the OOB margin on tree basis - the strength of 'raw margin'"
+    # TODO: This is not the raw margin,  it is more similar to check(tree, testdata).
+    # raw margin: can be only -1, 0 or 1; it is computed only for one data point and one tree
     correct = 0
     incorrect = 0
     for x in testdata:
@@ -61,6 +63,7 @@ def OOBmarginTree(tree, testdata):
 
 def OOBmarginForest(forest, testdata, SOOB=None):
     "Calculates the OOB margin on forest basis - the strength of mean margin"
+    # TODO: This is not oob forest margin.
     correct = 0
     incorrect = 0
     for x in testdata:
@@ -77,6 +80,7 @@ def OOBmarginForest(forest, testdata, SOOB=None):
 
 def meanCorr(forest, testdata):
     "Calculates mean correlation from raw margins"
+    # TODO: this is not mean correlation. 
     raw_vect = []
     for tree in forest:
         raw_str = OOBmarginTree(tree, testdata)
@@ -90,10 +94,6 @@ def meanCorr(forest, testdata):
     mr2 = raw_mean*raw_mean
     mean_corr = raw_var/mr2
     return mean_corr
-
-ITERATE = 10
-# TODO: Try less iterations (3) and report variance, too.
-# TODO: Save the reported data into a data structure.
 
 def metricsRI(oobForest1, oobForest2, oobTree1, oobTree2, errors1, errors2):
     """ Compute selection, singleInput and onetree metrics for a set of N forests."""
@@ -171,10 +171,6 @@ def load(fname):
     f.close()
     return ar
 
-ITERATE = 3
-# We 'should' run 100 iterations over everything on the first 10 'small' datasets like in the paper! :-)
-# TODO: Report as a latex table from the data structure.
-
 def NoiseAdder(S):
     allClasses = [o.xclass for o in S]
     Classes = set(allClasses)
@@ -190,6 +186,10 @@ def NoiseAdder(S):
     S = X1 + X2
     np.random.shuffle(S)
     return S
+
+ITERATE = 3
+# We 'should' run 100 iterations over everything on the first 10 'small' datasets like in the paper! :-)
+# TODO: Report as a latex table from the data structure.
 
 def checkOnData(data, training = True, evaluating = True, addNoise = False, simulatedSize = 3300):
     t0 = time.time()
