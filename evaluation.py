@@ -123,18 +123,18 @@ def metricsRI(oobForest1, oobForest2, oobTree1, oobTree2, errors1, errors2):
     return [selection, singleInput, onetree]
 
 def latexRI(data, mSel, mSingle, mOne, stdSel, stdSingle, stdOne, fname):
-    line = '{} & - & ${} \\pm {}$ & ${} \\pm {}$ & ${} \\pm {}$ \\\\ \n'.format(data, 
+    line = '{} & - & ${:.1f} \\pm {:.1f}$ & ${:.1f} \\pm {:.1f}$ & ${:.1f} \\pm {:.1f}$ \\\\ \n'.format(data, 
         mSel, stdSel, mSingle, stdSingle, mOne, stdOne)
     with open(fname, 'a') as f:
         f.write(line)
         
 def reportRI(selection, singleInput, onetree, data, S, runtime, fname):
-    mSel = np.mean(selection)
-    mSingle = np.mean(singleInput)
-    mOne = np.mean(onetree)
-    stdSel = np.std(selection)
-    stdSingle = np.std(singleInput)
-    stdOne = np.std(onetree)
+    mSel = np.mean(selection)*100.0
+    mSingle = np.mean(singleInput)*100.0
+    mOne = np.mean(onetree)*100.0
+    stdSel = np.std(selection)*100.0
+    stdSingle = np.std(singleInput)*100.0
+    stdOne = np.std(onetree)*100.0
     latexRI(data, mSel, mSingle, mOne, stdSel, stdSingle, stdOne, fname)
     print("Data :", data)
     print("Number of input :", str(S[0].getNbrAttributes()))

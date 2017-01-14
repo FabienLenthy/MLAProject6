@@ -32,6 +32,7 @@ of trees in forest B.
 '''
 
 def RandomForest(S, nbrTrees = 100, F=None, SF=True):
+    """ Return the random forest trained on data S, with trees H[i] and out-of-bag data samples Sb[i] for the i-th tree."""
     if F == None:
         F = range(S[0].getNbrAttributes())
     B = nbrTrees                    # number of trees in forest
