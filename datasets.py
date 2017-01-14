@@ -73,6 +73,24 @@ def twonorm(nbr):
     
     return data
 
+def threenorm(nbr):
+    dim=20
+    a = 2.0/20**0.5
+    means = [[a]*dim,[-a]*dim,[a,-a]*int(dim/2)]
+    variance = 1
+    data = []
+    
+    for i in range(nbr):
+        cls = np.random.randint(2)
+        mean = []
+        if cls == 0:
+            mean = means[np.random.randint(1)]
+        else:
+            mean = means[2]
+        data += [[np.random.normal(mean[j],variance) for j in range(dim)] + [cls]]
+    
+    return data
+    
 def ringnorm(nbr):
     dim=20
     a = 2.0/20**0.5
@@ -172,10 +190,30 @@ def chooseData(data,nbr=3300):
         data = twonorm(nbr)
         return [Sample(int(data[x][-1]),[data[x][i] for i in range(len(data[x])-1)],x) for x in range(len(data))]
     
+    elif data == "threenorm":
+        data = threenorm(nbr)
+        return [Sample(int(data[x][-1]),[data[x][i] for i in range(len(data[x])-1)],x) for x in range(len(data))]
+    
     elif data == "ringnorm":
         data = ringnorm(nbr)
         return [Sample(int(data[x][-1]),[data[x][i] for i in range(len(data[x])-1)],x) for x in range(len(data))]
     
+    elif data == "housing":
+        data = np.genfromtxt(prefix + "housing.data",dtype=None)
+        return [Sample(data[x][-1],[data[x][i] for i in range(len(data[x])-1)],x) for x in range(len(data))]
     
+    elif data == "ozone":
+        data = np.genfromtxt(prefix + 'LAozone.data',dtype=float,delimiter=',')[1:]
+        return [Sample(x[0],[x[i] for i in range(1,len(x)-1)],x[-1]) for x in data]
     
-
+    elif data == "servo":
+        data = np.genfromtxt(prefix + 'servo.data',dtype=None,delimiter=',')
+        data = [[ord(data[x][0].decode('utf-8'))-65,ord(data[x][1].decode('utf-8'))-65] +
+                [data[x][i] for i in range(2,len(data[x]))] for x in range(len(data))]
+        return [Sample(data[x][-1],[data[x][i] for i in range(len(data[x])-1)],x) for x in range(len(data))]
+    
+    elif data == "abalone":
+        data = np.genfromtxt(prefix + 'abalone.data',dtype=None,delimiter=',')
+        data = [[2*int(data[x][0].decode('utf-8')=='F')+int(data[x][0].decode('utf-8')=='M')]+
+                [data[x][i] for i in range(1,len(data[x]))] for x in range(len(data))]
+        return [Sample(data[x][-1],[data[x][i] for i in range(len(data[x])-1)],x) for x in range(len(data))]
