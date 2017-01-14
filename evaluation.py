@@ -96,57 +96,59 @@ def meanCorr(forest, testdata):
     mean_corr = raw_var/mr2
     return mean_corr
 
-def margin(tree, testdata):
+
+def margin(datapoint, forest):
+    "Calculates the margin of a data point, using expectation of raw_margin"
+    x = datapoint 
+
+    #cls_list = []
+    #cls_count = []
+
     correct = 0
     incorrect = 0
     corr_list = []
-    corr_elem = []
+    corr_count = []
     incorr_list = []
-    incorr_elem = []
+    incorr_count = []
 
-    #We first find the class with most wrong classifications
-    for x in testdata:
-        cls = classify(tree, x)
+    "In this loop we check which class is the 'best' among the wrong classes"
+    for tree in forest:
+        cls = classify(tree, datapoint)
         if cls == x.getClass():
-            correct +=1
+            correct += 1
             if cls not in corr_list:
                 corr_list.append(cls)
-                corr_elem.append(1)
+                corr_count.append(1)
             elif cls in corr_list:
-                corr_elem[corr_list.index(cls)] += 1             
+                corr_count[corr_list.index(cls)] += 1
         else:
             incorrect += 1
             if cls not in incorr_list:
                 incorr_list.append(cls)
-                incorr_elem.append(1)
+                incorr_count.append(1)
             elif cls in incorr_list:
-                incorr_elem[incorr_list.index(cls)] += 1
-                
-    #hat(j) - in raw margin function
-    argMaxWrong = incorr_list[incorr_elem.index(max(incorr_elem))] #Best class among the wrong classes
+                incorr_count[incorr_list.index(cls)] += 1
 
-    #We now classify each datapoint in the testdata
+    #hat(j) - raw margin function
+    argMaxWrong_class = incorr_list[incorr_count.index(max(incorr_count))]
+
+    #Raw marginal of data point
     sum_rmg = 0
-    for x in testdata:
-        "Calculate the raw margin function for each datapoint"
+    for tree in forest:
         ind_corr = 0
-        ind_argMaxIncorr = 0
-
+        ind_argMax = 0
         cls = classify(tree,x)
         if cls == x.getClass():
             ind_corr = 1
-        elif cls == argMaxWrong:
-            inc_argMaxIncorr = 1
-            
-        rmg = ind_corr - ind_argMaxIncorr
+        elif cls == argMaxWrong_class:
+            ind_argMax = 1
 
-        "Summarize the raw margins to be able to take the expectation to get margin function"
+        rmg = ind_corr - ind_argMax
         sum_rmg += rmg
-
     "Expectation of raw margin of the data set given a tree classifier"
-    exp_rmg = sum_rmg / (correct + incorrect)
+    exp_rmg = sum_rmg /(correct + incorrect)
     mr = exp_rmg
-
+                
     return mr
 
 def metricsRI(oobForest1, oobForest2, oobTree1, oobTree2, errors1, errors2):
