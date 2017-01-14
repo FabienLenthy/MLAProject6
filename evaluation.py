@@ -176,8 +176,40 @@ def strength(dataset, forest):
         mr = margin(x, forest)
         sum_mr += mr
 
+    #Equal probability of datapoints (Univariate)
+    #Therefore strength is same as mean of mr
     strength = sum_mr / N
+    
     return strength
+
+def varMR(dataset, forest):
+    "Calculates variance of margin"
+    N = len(dataset)
+    mr_list = []
+    for x in dataset:
+        mr_list.append(margin(x, forest))
+        
+    mean_mr = sum(mr_list) / N
+
+    var_mr = 0
+    for i in mr_list:
+        var_mr += (i-mean_mr)**2
+    var_mr = var_mr/(N-1)
+
+    return var_mr
+
+def stdMR(dataset, forest):
+    "Calculates standard deviation of margin"
+    var = varMR(dataset, forest)
+    stddev = var**0.5 #Variance is never negative, no worry about root of negative
+    return stddev
+
+"""
+TODO:
+    Check Q(x,j) as estimate for p(h(x,O) =j) ?
+    Should we calculate all the above with estimates instead?
+    Or maybe we should compare the estimates with true values?
+"""
 
 def metricsRI(oobForest1, oobForest2, oobTree1, oobTree2, errors1, errors2):
     """ Compute selection, singleInput and onetree metrics for a set of N forests."""
