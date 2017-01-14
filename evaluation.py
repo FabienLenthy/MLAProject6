@@ -97,7 +97,7 @@ def meanCorr(forest, testdata):
     return mean_corr
 
 
-def margin(datapoint, forest):
+def raw_margin(datapoint, forest):
     "Calculates the margin of a data point, using expectation of raw_margin"
     x = datapoint 
 
@@ -123,12 +123,15 @@ def margin(datapoint, forest):
     sum_ind_corr = correct
     sum_ind_j = max(incorr_count)
 
-    sum_rmg = sum_ind_corr - sum_ind_j
+    rmg = sum_ind_corr - sum_ind_j
+                
+    return rmg
 
+def margin(datapoint, forest):
+    sum_rmg = raw_margin(datapoint, forest)
     "Expectation of raw margin of the data set given a tree classifier"
     exp_rmg = sum_rmg /(correct + incorrect)
     mr = exp_rmg
-                
     return mr
 
 def metricsRI(oobForest1, oobForest2, oobTree1, oobTree2, errors1, errors2):
