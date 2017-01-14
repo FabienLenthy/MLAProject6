@@ -128,9 +128,35 @@ def raw_margin(datapoint, forest):
     return rmg
 
 def margin(datapoint, forest):
-    sum_rmg = raw_margin(datapoint, forest)
+    "Calculates the margin of a data point, using expectation of raw_margin"
+    x = datapoint 
+
+    correct = 0
+    incorrect = 0
+    incorr_list = []
+    incorr_count = []
+
+    "In this loop we check which class is the 'best' among the wrong classes"
+    for tree in forest:
+        cls = classify(tree, datapoint)
+        if cls == x.getClass():
+            correct += 1
+        else:
+            incorrect += 1
+            if cls not in incorr_list:
+                incorr_list.append(cls)
+                incorr_count.append(1)
+            elif cls in incorr_list:
+                incorr_count[incorr_list.index(cls)] += 1
+
+    #hat(j) - raw margin function
+    sum_ind_corr = correct
+    sum_ind_j = max(incorr_count)
+
+    rmg = sum_ind_corr - sum_ind_j
+
     "Expectation of raw margin of the data set given a tree classifier"
-    exp_rmg = sum_rmg /(correct + incorrect)
+    exp_rmg = rmg /(correct + incorrect)
     mr = exp_rmg
     return mr
 
