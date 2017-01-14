@@ -168,6 +168,17 @@ def margin(datapoint, forest):
     mr = exp_rmg
     return mr
 
+def strength(dataset, forest):
+    "Calculates the strength"
+    N = len(dataset)
+    sum_mr = 0
+    for x in dataset:
+        mr = margin(x, forest)
+        sum_mr += mr
+
+    strength = sum_mr / N
+    return strength
+
 def metricsRI(oobForest1, oobForest2, oobTree1, oobTree2, errors1, errors2):
     """ Compute selection, singleInput and onetree metrics for a set of N forests."""
     N = len(oobForest1)
