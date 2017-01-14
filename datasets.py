@@ -60,6 +60,32 @@ def waveform(nbr):
         
     return data
 
+def twonorm(nbr):
+    dim=20
+    a = 2.0/20**0.5
+    m = [a,-a]
+    variance = 1
+    data = []
+    
+    for i in range(nbr):
+        cls = np.random.randint(2)
+        data += [[np.random.normal(m[cls],variance) for _ in range(dim)] + [cls]]
+    
+    return data
+
+def ringnorm(nbr):
+    dim=20
+    a = 2.0/20**0.5
+    m = [0,a]
+    variance = [4,1]
+    data = []
+    
+    for i in range(nbr):
+        cls = np.random.randint(2)
+        data += [[np.random.normal(m[cls],variance[cls]) for _ in range(dim)] + [cls]]
+    
+    return data
+
 def chooseData(data,nbr=3300):
     prefix = 'datasets/'
     if data == "glass":
@@ -124,9 +150,32 @@ def chooseData(data,nbr=3300):
         data = np.genfromtxt(prefix + "sat.tst",dtype=int)
         return [Sample(data[x][-1],[data[x][i] for i in range(len(data[x])-1)],x) for x in range(len(data))]
     
+    elif data == "soybean":
+        data1 = np.genfromtxt(prefix + 'soybean-large.data',dtype=str,delimiter=',')
+        data2 = np.genfromtxt(prefix + 'soybean-large.test',dtype=str,delimiter=',')
+        data1 = [Sample(data1[x][0],[int(data1[x][i]) for i in range(1,len(data1[x]))],x) for x in range(len(data1)) 
+                 if not any(y=='?' for y in data1[x])]
+        data2 = [Sample(data2[x][0],[int(data2[x][i]) for i in range(1,len(data2[x]))],x) for x in range(len(data2)) 
+                 if not any(y=='?' for y in data2[x])]
+        return np.concatenate((data1,data2))
+    
+    elif data == "zip-code":
+        data = np.genfromtxt(prefix + 'semeion.data',dtype=None)
+        return [Sample([data[x][i] for i in range(len(data[x])-10,len(data[x]))].index(1),
+                       [data[x][i] for i in range(len(data[x])-10)],x) for x in range(len(data))]
+    
     elif data == "waveform":
         data = waveform(nbr)
         return [Sample(int(data[x][-1]),[data[x][i] for i in range(len(data[x])-1)],x) for x in range(len(data))]
+    
+    elif data == "twonorm":
+        data = twonorm(nbr)
+        return [Sample(int(data[x][-1]),[data[x][i] for i in range(len(data[x])-1)],x) for x in range(len(data))]
+    
+    elif data == "ringnorm":
+        data = ringnorm(nbr)
+        return [Sample(int(data[x][-1]),[data[x][i] for i in range(len(data[x])-1)],x) for x in range(len(data))]
+    
     
     
 
