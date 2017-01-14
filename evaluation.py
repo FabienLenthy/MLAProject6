@@ -121,7 +121,11 @@ def raw_margin(datapoint, forest):
 
     #hat(j) - raw margin function
     sum_ind_corr = correct
-    sum_ind_j = max(incorr_count)
+
+    if incorr_count == []: #We could have no incorrect classifications
+        sum_ind_j = 0
+    else:
+        sum_ind_j = max(incorr_count)
 
     rmg = sum_ind_corr - sum_ind_j
                 
@@ -150,8 +154,12 @@ def margin(datapoint, forest):
                 incorr_count[incorr_list.index(cls)] += 1
 
     #hat(j) - raw margin function
+
     sum_ind_corr = correct
-    sum_ind_j = max(incorr_count)
+    if incorr_count == []: #We could have no incorrect classifications
+        sum_ind_j = 0 
+    else:
+        sum_ind_j = max(incorr_count)
 
     rmg = sum_ind_corr - sum_ind_j
 
