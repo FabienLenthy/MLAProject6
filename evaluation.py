@@ -288,12 +288,13 @@ def E_stdRMG(dataset, forest):
     return E_stdrmg
 
 # Mean correlation
-def meanCorr(dataset, forest):
+def meanCorr(dataset, forest, forest2):
     "Calculates the mean correlation"
     var = varMR(dataset, forest)
     E_stdrmg = E_stdRMG(dataset, forest)
+    E_stdrmg_prime = E_stdRMG(dataset, forest2)
 
-    corrCoefficient = var / (E_stdrmg**2)
+    corrCoefficient = var / (E_stdrmg*E_stdrmg_prime)
     return corrCoefficient
     
 
