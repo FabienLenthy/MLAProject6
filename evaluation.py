@@ -204,6 +204,101 @@ def stdMR(dataset, forest):
     stddev = var**0.5 #Variance is never negative, no worry about root of negative
     return stddev
 
+def stdRMG(datapoint, forest):
+    "Calculates the standard deviation for raw marginal"
+    x = datapoint 
+
+    correct = 0
+    incorrect = 0
+    corr_list = []
+    corr_count = []
+    incorr_list = []
+    incorr_count = []
+    
+    for tree in forest:
+        cls = classify(tree, datapoint)
+        if cls == x.getClass():
+            correct += 1
+            if cls not in corr_list:
+                corr_list.append(cls)
+                corr_count.append(1)
+            elif cls in corr_list:
+                corr_count[corr_list.index(cls)] += 1
+        else:
+            incorrect += 1
+            if cls not in incorr_list:
+                incorr_list.append(cls)
+                incorr_count.append(1)
+            elif cls in incorr_list:
+                incorr_count[incorr_list.index(cls)] += 1
+
+    rmg_list = []
+    if incorr_count == []:
+        sum_rmg = 0
+        for tree in forest:
+            ind_corr = 0
+            ind_argMax = 0
+            cls = classify(tree,x)
+            if cls == x.getClass():
+                ind_corr = 1
+            rmg = ind_corr - ind_argMax
+            rmg_list.append(rmg)
+
+    else:
+        #hat(j) - raw margin function
+        argMaxWrong_class = incorr_list[incorr_count.index(max(incorr_count))]
+
+        #Raw marginal of data point
+        sum_rmg = 0
+        for tree in forest:
+            ind_corr = 0
+            ind_argMax = 0
+            cls = classify(tree,x)
+            if cls == x.getClass():
+                ind_corr = 1
+            elif cls == argMaxWrong_class:
+                ind_argMax = 1
+
+            rmg = ind_corr - ind_argMax
+            rmg_list.append(rmg)
+            
+            sum_rmg += rmg
+
+    mean_rmg = sum(rmg_list) / len(rmg_list)
+
+    #Variance of rmg
+    var_rmg = 0
+    for i in rmg_list:
+        var_rmg += (i-mean_rmg)**2
+    var_rmg = var_rmg / (len(rmg_list) - 1)
+
+    #Standard deviation of rmg
+    stddev_rmg = var_rmg**0.5
+
+    return stddev_rmg
+
+def E_stdRMG(dataset, forest):
+    "Calculates the expected value of the standard deviation of the raw marginals"
+    stdrmg_list = []
+    for x in dataset:
+        stdrmg = stdRMG(x, forest)
+        stdrmg_list.append(stdrmg)
+
+    E_stdrmg = sum(stdrmg_list) / len(stdrmg_list)
+    return E_stdrmg
+
+# Mean correlation
+def meanCorr(dataset, forest):
+    "Calculates the mean correlation"
+    var = varMR(dataset, forest)
+    E_stdrmg = E_stdRMG(dataset, forest)
+
+    corrCoefficient = var / (E_stdrmg**2)
+    return corrCoefficient
+    
+
+
+
 """
 TODO:
     Check Q(x,j) as estimate for p(h(x,O) =j) ?
